@@ -1,17 +1,24 @@
 package models
 
 import (
+	"context"
+	"data"
 	"errors"
+	"time"
 
-	uuid "github.com/satori/go.uuid"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // Users :
 var Users = make(map[string]User)
 
+// InputUser :
+type InputUser struct {
+}
+
 // User :
 type User struct {
-	UserID   string `json:"userid"`
+	UserID   string `json:"userid" bson:"_id"`
 	UserName string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -25,11 +32,24 @@ func (u User) AddUser() error {
 	if !validUser {
 		return errors.New(msg)
 	}
-	userID, _ := uuid.NewV4()
-	u.UserID = userID.String()
-	u.Status = "Y"
+	// userID, _ := uuid.NewV4()
+	// u.UserID = userID.String()
+	// u.Status = "Y"
 	// Users[userID.String()] = u
-
+	collection := data.RescueDB.Collection("users")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err := collection.InsertOne(ctx, bson.M{
+		"username": u.UserName,
+		"email":    u.Email,
+		"password": u.Password,
+		"usertype": u.UserType,
+		"status":   "Y",
+	})
+	if err != nil {
+		return err
+	}
+	// id := res.InsertedID
 	return nil
 }
 
@@ -52,16 +72,31 @@ func validateUserDetails(u User) (valid bool, msg string) {
 
 // GetUsers :
 func GetUsers(userID string) ([]User, error) {
-	var users []User
-	if userID != "" {
-		if user, ok := Users[userID]; ok {
-			users = append(users, user)
-			return users, nil
-		}
+
+	collection := data.RescueDB.Collection("users")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	cur, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
 	}
-	for _, user := range Users {
+	defer cur.Close(ctx)
+
+	var users []User
+	for cur.Next(ctx) {
+		var user User
+		err := cur.Decode(&user)
+		if err != nil {
+			return nil, err
+		}
 		users = append(users, user)
 	}
+
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+
 	return users, nil
 }
 

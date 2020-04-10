@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/ajlab/rescue-planet/api/controllers"
+	"api/controllers"
+
 	"github.com/julienschmidt/httprouter"
 )
 

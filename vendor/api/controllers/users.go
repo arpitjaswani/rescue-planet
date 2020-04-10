@@ -1,11 +1,10 @@
 package controllers
 
 import (
+	"api/models"
 	"encoding/json"
 	"net/http"
-
-	"github.com/ajlab/rescue-planet/api/models"
-	"github.com/ajlab/rescue-planet/util"
+	"util"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -33,6 +32,10 @@ func AddUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 func GetUsers(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	userID := p.ByName("userid")
 	users, err := models.GetUsers(userID)
+	if len(users) == 0 {
+		util.WebResponse(w, http.StatusNotFound, "Users not found.")
+		return
+	}
 	if err != nil {
 		util.WebResponse(w, http.StatusNotFound, err.Error())
 		return
