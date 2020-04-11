@@ -53,9 +53,14 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
+	if user.UserID == "" {
+		util.WebResponse(w, http.StatusForbidden, "Please insert valid user id.")
+		return
+	}
+
 	_, err = user.UpdateUser()
 	if err != nil {
-		util.WebResponse(w, http.StatusInternalServerError, "Error while adding user.")
+		util.WebResponse(w, http.StatusInternalServerError, "Error while updating user.")
 		return
 	}
 

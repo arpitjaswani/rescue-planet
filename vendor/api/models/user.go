@@ -6,6 +6,8 @@ import (
 	"errors"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -32,10 +34,7 @@ func (u User) AddUser() error {
 	if !validUser {
 		return errors.New(msg)
 	}
-	// userID, _ := uuid.NewV4()
-	// u.UserID = userID.String()
-	// u.Status = "Y"
-	// Users[userID.String()] = u
+
 	collection := data.RescueDB.Collection("users")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -46,11 +45,8 @@ func (u User) AddUser() error {
 		"usertype": u.UserType,
 		"status":   "Y",
 	})
-	if err != nil {
-		return err
-	}
-	// id := res.InsertedID
-	return nil
+
+	return err
 }
 
 func validateUserDetails(u User) (valid bool, msg string) {
@@ -84,42 +80,74 @@ func GetUsers(userID string) ([]User, error) {
 	defer cur.Close(ctx)
 
 	var users []User
-	for cur.Next(ctx) {
-		var user User
-		err := cur.Decode(&user)
-		if err != nil {
-			return nil, err
-		}
-		users = append(users, user)
-	}
-
-	if err := cur.Err(); err != nil {
+	if err = cur.All(ctx, &users); err != nil {
 		return nil, err
 	}
+
+	// for cur.Next(ctx) {
+	// 	var user User
+	// 	err := cur.Decode(&user)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	users = append(users, user)
+	// }
+
+	// if err := cur.Err(); err != nil {
+	// 	return nil, err
+	// }
 
 	return users, nil
 }
 
 // UpdateUser :
 func (u User) UpdateUser() (User, error) {
-	user, ok := Users[u.UserID]
-	if !ok {
+	var user User
+	userID, _ := primitive.ObjectIDFromHex(u.UserID)
+	// opts := options.Update().SetUpsert(true)
+	collection := data.RescueDB.Collection("users")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	result, err := collection.UpdateOne(ctx, bson.M{
+		"_id": userID,
+	}, bson.M{
+		"$set": bson.M{
+			"email":    u.Email,
+			"password": u.Password,
+		},
+	})
+
+	if err != nil {
+		return user, err
+	}
+
+	if result.ModifiedCount == 0 {
 		return user, errors.New("User not found")
 	}
-	user.Email = u.Email
-	user.Password = u.Password
-	user.UserType = u.UserType
-	Users[u.UserID] = user
 	return user, nil
 }
 
 // DeactivateUser :
 func DeactivateUser(userID string) (User, error) {
-	user, ok := Users[userID]
-	if !ok {
+	var user User
+	id, _ := primitive.ObjectIDFromHex(userID)
+	collection := data.RescueDB.Collection("users")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	result, err := collection.UpdateOne(ctx, bson.M{
+		"_id": id,
+	}, bson.M{
+		"$set": bson.M{
+			"status": "N",
+		},
+	})
+
+	if err != nil {
+		return user, err
+	}
+
+	if result.ModifiedCount == 0 {
 		return user, errors.New("User not found")
 	}
-	user.Status = "N"
-	Users[userID] = user
 	return user, nil
 }
