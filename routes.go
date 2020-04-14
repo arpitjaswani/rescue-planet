@@ -1,7 +1,8 @@
 package main
 
 import (
-	"api/controllers"
+	admin "admin/controllers"
+	api "api/controllers"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -9,15 +10,25 @@ import (
 func addRoutes() *httprouter.Router {
 	router := httprouter.New()
 
-	// base routes
-	router.GET("/", controllers.Index)
+	// API Routes
+	//==================================================
 
-	// user routes
-	router.GET("/user", controllers.GetUsers)
-	router.GET("/user/:userid", controllers.GetUsers)
-	router.POST("/user/add", controllers.AddUser)
-	router.PATCH("/user/update", controllers.UpdateUser)
-	router.PATCH("/user/deactivate/:userid", controllers.DeactivateUser)
+	// base
+	router.GET("/", api.Index)
+	// users
+	router.GET("/user", api.GetUsers)
+	router.GET("/user/:userid", api.GetUsers)
+	router.POST("/user/add", api.AddUser)
+	router.PATCH("/user/update", api.UpdateUser)
+	router.PATCH("/user/deactivate/:userid", api.DeactivateUser)
+
+	// Admin Routes
+	//==================================================
+
+	// base
+	router.GET("/admin", admin.Index)
+	// users
+	// router.GET("/admin/login", controllers.Login)
 
 	return router
 }
