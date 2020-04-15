@@ -11,13 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// Users :
-var Users = make(map[string]User)
-
-// InputUser :
-type InputUser struct {
-}
-
 // User :
 type User struct {
 	UserID   string `json:"userid" bson:"_id"`
