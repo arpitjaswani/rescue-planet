@@ -84,31 +84,9 @@ func DeactivateUser(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 
 // Login :
 func Login(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	// var user models.User
-	// err := json.NewDecoder(r.Body).Decode(&user)
-	// if err != nil {
-	// 	util.WebResponse(w, http.StatusForbidden, "Error while fetching request data.")
-	// 	return
-	// }
-
-	// if user.UserName == "" || user.Password == "" {
-	// 	err = templates.AdminTpl.ExecuteTemplate(w, "login.gohtml", nil)
-	// 	if err != nil {
-	// 		fmt.Println(err.Error())
-	// 		return
-	// 	}
-	// }
-
-	err := templates.AdminTpl.ExecuteTemplate(w, "login.gohtml", nil)
+	err := templates.Render(w, "login.gohtml", nil)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-
-	// err = templates.AdminTpl.ExecuteTemplate(w, "base.gohtml", nil)
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// 	return
-	// }
-
 	return
 }

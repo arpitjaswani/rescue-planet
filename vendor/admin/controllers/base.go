@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"admin/models"
 	"fmt"
 	"net/http"
 
@@ -11,7 +12,10 @@ import (
 
 // Index :
 func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	err := templates.AdminTpl.ExecuteTemplate(w, "base.gohtml", nil)
+	var data models.TplResponse
+	data.Title = "Rescue Planet - Dashboard"
+	data.User.UserName = "Arpit J"
+	err := templates.Render(w, "dashboard.gohtml", data)
 	if err != nil {
 		fmt.Println(err.Error())
 		return

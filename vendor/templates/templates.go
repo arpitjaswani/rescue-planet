@@ -2,11 +2,21 @@ package templates
 
 import (
 	"html/template"
+	"io"
 )
 
-// AdminTpl :
-var AdminTpl *template.Template
+// adminTpl :
+var adminTpl *template.Template
 
 func init() {
-	AdminTpl = template.Must(template.ParseGlob("vendor/templates/admin/*.gohtml"))
+	adminTpl = template.Must(template.ParseGlob("vendor/templates/admin/*.gohtml"))
+}
+
+// Render :
+func Render(wr io.Writer, name string, data interface{}) error {
+	err := adminTpl.ExecuteTemplate(wr, name, data)
+	if err != nil {
+		// sent another resposne here
+	}
+	return err
 }
