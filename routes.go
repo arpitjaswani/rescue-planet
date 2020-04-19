@@ -10,6 +10,7 @@ import (
 
 func addRoutes() *httprouter.Router {
 	router := httprouter.New()
+	router.RedirectTrailingSlash = true
 
 	// Static files server
 	// ====================================================================
@@ -34,6 +35,10 @@ func addRoutes() *httprouter.Router {
 	router.GET("/admin", admin.Index)
 	// users
 	router.GET("/admin/login", admin.Login)
+	router.POST("/admin/credentials", admin.CheckLogin)
+	router.GET("/admin/register", admin.Register)
+	router.GET("/admin/adopt", IsAuthorized("admin", admin.Adopt))
+	router.POST("/admin/addUser", GenerateToken("admin", admin.AddUser))
 
 	return router
 }
