@@ -110,3 +110,37 @@ func DeactivateUser(userID string) (User, error) {
 	}
 	return user, nil
 }
+
+// GetUsers :
+func GetUsers(userID string) ([]User, error) {
+
+	collection := data.RescueDB.Collection("users")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	cur, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	var users []User
+	if err = cur.All(ctx, &users); err != nil {
+		return nil, err
+	}
+
+	// for cur.Next(ctx) {
+	// 	var user User
+	// 	err := cur.Decode(&user)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	users = append(users, user)
+	// }
+
+	// if err := cur.Err(); err != nil {
+	// 	return nil, err
+	// }
+
+	return users, nil
+}
